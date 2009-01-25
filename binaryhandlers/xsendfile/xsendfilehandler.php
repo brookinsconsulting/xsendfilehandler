@@ -28,8 +28,8 @@ class XSendFileHandler extends eZBinaryFileHandler
             $fileSize = $file->size();
             $mimeType =  $fileInfo['mime_type'];
             $originalFileName = $fileInfo['original_filename'];
-
             header( $this->sendfileHeader . ": $fileName" );
+            header( "X-LIGHTTPD-send-file: " . $_ENV['DOCUMENT_ROOT'] ."/".$fileName);
             header( "Pragma: " );
             header( "Cache-Control: " );
             /* Set cache time out to 10 minutes, this should be good enough to work around an IE bug */
