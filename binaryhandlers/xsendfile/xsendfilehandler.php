@@ -36,11 +36,38 @@ class XSendFileHandler extends eZBinaryFileHandler
             header( "Expires: ". gmdate( 'D, d M Y H:i:s', time() + 600 ) . ' GMT' );
             header( "Content-Type: $mimeType" );
             header( "X-Powered-By: eZ Publish" );
-            header( "Content-disposition: attachment; filename=\"$originalFileName\"" );
+
+            $dispositionType = self::dispositionType( $mimeType );
+            header( "Content-disposition: $dispositionType; filename=\"$originalFileName\"" );
 
             eZExecution::cleanExit();
         }
         return eZBinaryFileHandler::RESULT_UNAVAILABLE;
+    }
+
+    /**
+     * Checks if a file should be downloaded to disk or displayed inline in
+     * the browser.
+     *
+     * This method returns "attachment" if no setting for the mime type is found.
+     *
+     * @param string $mimetype
+     * @return string "attachment" or "inline"
+     */
+    protected static function dispositionType( $mimeType )
+    {
+        $ini = eZINI::instance( 'file.ini' );
+
+        if ( $ini->hasVariable( 'PassThroughSettings', 'ContentDisposition' ) )
+        {
+            $mimeTypes = $ini->variable( 'PassThroughSettings', 'ContentDisposition' );
+            if ( isset( $mimeTypes[$mimeType] ) )
+            {
+                return $mimeTypes[$mimeType];
+            }
+        }
+
+        return 'attachment';
     }
 }
 
